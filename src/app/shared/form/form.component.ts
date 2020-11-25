@@ -1,13 +1,13 @@
-import { Component, OnInit, Output, Input, EventEmitter, OnChanges } from '@angular/core';
-import { FormControl, Validators, FormGroup } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, ElementRef, EventEmitter, Input, NgZone, OnChanges, OnInit, Output, Renderer2 } from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { Person } from '../../model/person.model';
 
-import { CustomValidators } from './custom-validators';
-import {Person} from '../../model/person.model';
 
 @Component({
     selector: 'pwa-form',
     templateUrl: 'form.component.html',
-    styleUrls: ['form.component.css']
+    styleUrls: ['form.component.css'],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FormComponent implements OnInit, OnChanges {
 
@@ -19,12 +19,21 @@ export class FormComponent implements OnInit, OnChanges {
     @Output() submit: EventEmitter<Person>;
 
 
-    constructor() {
+    constructor(private element: ElementRef, private renderer: Renderer2, private zone: NgZone) {
         this.submit = new EventEmitter();
         this.cancel = new EventEmitter();
         this.model = {address: {}};
         this.form = this._buildForm();
     }
+
+    tick(): void {
+        this.renderer.setStyle(this.element.nativeElement, 'border', '2px solid orangered');
+        this.zone.runOutsideAngular(() => {
+          setTimeout(() => {
+            this.renderer.setStyle(this.element.nativeElement, 'border', 'none');
+          }, 500);
+        });
+      }
 
     /**
      * OnInit implementation

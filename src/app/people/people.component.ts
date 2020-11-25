@@ -1,16 +1,16 @@
-import { mergeMap } from 'rxjs/operators';
-
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { AddDialogComponent } from './add-dialog/add-dialog.component';
-import { PeopleService } from '../shared/people.service';
-import { Person } from '../model/person.model';
 import { Subscription } from 'rxjs';
+import { Person } from '../model/person.model';
+import { PeopleService } from '../shared/people.service';
+import { AddDialogComponent } from './add-dialog/add-dialog.component';
+
 
 @Component({
   selector: 'pwa-people',
   templateUrl: 'people.component.html',
-  styleUrls: ['people.component.css']
+  styleUrls: ['people.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class PeopleComponent implements OnInit, OnDestroy {
 
@@ -20,14 +20,17 @@ export class PeopleComponent implements OnInit, OnDestroy {
   private peopleSubscription!: Subscription;
   private addDialog: MatDialogRef<AddDialogComponent>;
 
-  constructor(private peopleService: PeopleService, public dialog: MatDialog) {
+  constructor(private peopleService: PeopleService, public dialog: MatDialog, public cdr: ChangeDetectorRef) {
   }
 
   /**
    * OnInit implementation
    */
   ngOnInit() {
-    this.peopleSubscription = this.peopleService.fetch().subscribe(people => this.people = people);
+    this.peopleSubscription = this.peopleService.fetch().subscribe(people => {
+      this.people = people;
+      this.cdr.detectChanges();
+    });
   }
 
   ngOnDestroy(): void {
@@ -35,18 +38,18 @@ export class PeopleComponent implements OnInit, OnDestroy {
   }
 
   delete(person: Person) {
-    this.peopleService.delete(person.id).pipe(
-      mergeMap(() => this.peopleService.fetch())
-    )
-    .subscribe(people => this.people = people);
+    this.peopleService.delete(person.id).subscribe(() => {
+      const index = this.people.findIndex(p => p.id === person.id);
+      this.people.splice(index, 1);
+      this.cdr.markForCheck();
+    });
   }
 
   add(person: Person) {
-    this.peopleService.create(person)
-        .pipe(mergeMap(() => this.peopleService.fetch()))
-        .subscribe(people => {
-          this.people = people;
-        });
+    this.peopleService.create(person).subscribe(personAdded => {
+      this.people.push(personAdded);
+      this.cdr.detectChanges();
+    });
   }
 
   showDialog() {
@@ -60,6 +63,9 @@ export class PeopleComponent implements OnInit, OnDestroy {
       this.dialogStatus = 'inactive';
       if (person) {
         this.add(person);
+      } else {
+        // for button "Add" refresh
+        this.cdr.markForCheck();
       }
     });
   }

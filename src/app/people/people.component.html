@@ -1,5 +1,5 @@
 <section>
-  <pwa-card *ngFor="let person of people;trackBy: trackByFn" [person]="person" (personDelete)="delete($event)"></pwa-card>
+  <pwa-card-on-push *ngFor="let person of people;trackBy: trackByFn" [person]="person" (personDelete)="delete($event)"></pwa-card-on-push>
 </section>
 
 <button (click)="showDialog()" *ngIf="dialogStatus == 'inactive'" mat-fab color="accent">

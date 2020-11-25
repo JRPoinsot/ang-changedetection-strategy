@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
-import {Person} from '../../model/person.model';
+import { Person } from '../../model/person.model';
 
 @Component({
   selector: 'pwa-add-dialog',
   templateUrl: './add-dialog.component.html',
-  styleUrls: ['./add-dialog.component.css']
+  styleUrls: ['./add-dialog.component.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddDialogComponent implements OnInit {
   constructor(public dialogRef: MatDialogRef<AddDialogComponent>) {}
